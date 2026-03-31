@@ -1,0 +1,2 @@
+"""Azure search projects."""
+
