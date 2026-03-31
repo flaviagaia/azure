@@ -21,6 +21,19 @@ azure/
 └── main.py
 ```
 
+### Topologia técnica do repositório
+
+O monorepo foi dividido para separar claramente:
+
+- `projects/`
+  Camada de domínio, contendo um diretório por projeto.
+- `src/projects.py`
+  Camada agregadora que coleta os outputs dos projetos implementados e produz um relatório consolidado.
+- `main.py`
+  Entry point do bundle, responsável por executar os casos implementados e persistir o artefato final.
+- `tests/test_portfolio.py`
+  Camada de regressão mínima para garantir integridade estrutural e presença dos principais indicadores.
+
 ### Projetos implementados
 
 1. `payment_anomaly_stream_azure`
@@ -29,6 +42,15 @@ azure/
    Caso de uso de busca corporativa com foco em indexação e retrieval de políticas internas.
 3. `claims_approval_workflow_azure`
    Caso de uso de workflow operacional para autoaprovação e fila de revisão manual.
+
+### Semântica dos projetos implementados
+
+- `payment_anomaly_stream_azure`
+  Representa uma arquitetura orientada a eventos em que sinais de pagamento são ingeridos continuamente e analisados por uma camada de detecção de anomalia.
+- `enterprise_policy_search_azure`
+  Representa um serviço de knowledge retrieval corporativo, em que políticas internas são indexadas e recuperadas por similaridade.
+- `claims_approval_workflow_azure`
+  Representa uma arquitetura de workflow operacional com regras de autoaprovação, desvio para revisão manual e integração entre sistemas.
 
 ### Blueprints adicionais
 
@@ -57,6 +79,17 @@ O repositório também inclui blueprints para:
 - `Azure AI Bot Service`
 - `Azure Custom Vision`
 - `API Management`
+
+### Tradução de workloads para Azure
+
+Os projetos deste monorepo foram escolhidos para representar três famílias de workload comuns na plataforma:
+
+- `streaming e detecção em tempo real`
+  melhor representado por `Event Hubs + Stream Analytics + Azure Machine Learning`
+- `search e knowledge retrieval`
+  melhor representado por `Azure AI Search + App Service + Azure SQL Database`
+- `workflow e automação operacional`
+  melhor representado por `Logic Apps + Azure Functions + Blob Storage + API Management`
 
 ### Arquitetura Azure de referência
 
@@ -135,6 +168,46 @@ Em termos de camadas, o desenho pode ser entendido assim:
 - `exposição e consumo`
   `App Service`, `API Management` e `Power BI`
 
+### Contrato do artefato consolidado
+
+O bundle salva um artefato unificado em:
+
+- `data/processed/azure_portfolio_report.json`
+
+Cada item do relatório contém, no mínimo:
+
+- `project_name`
+- lista de `azure_services`
+- métricas centrais do caso de uso
+
+Exemplos:
+
+- streaming:
+  - `events_processed`
+  - `anomaly_rate`
+  - `precision`
+  - `recall`
+- search:
+  - `documents_indexed`
+  - `top_match_doc_id`
+  - `top_match_score`
+- workflow:
+  - `claims_processed`
+  - `auto_approved`
+  - `manual_review_queue`
+  - `auto_approval_rate`
+
+### Leitura técnica do bundle
+
+O objetivo aqui não é reproduzir o runtime gerenciado da Azure dentro do repositório, mas mostrar:
+
+- decomposição arquitetural por tipo de workload;
+- mapeamento entre problema de negócio e serviço cloud;
+- implementação local mínima para validar a lógica do caso de uso;
+- organização do portfólio em um formato fácil de escalar com novos projetos.
+
+Isso torna o repositório útil tanto como demonstração prática quanto como blueprint de arquitetura.
+
 ### Execução
 
 ```bash
@@ -167,6 +240,26 @@ This repository is organized as an Azure-focused portfolio monorepo, separating 
 - `payment_anomaly_stream_azure`
 - `enterprise_policy_search_azure`
 - `claims_approval_workflow_azure`
+
+### Repository topology
+
+- `projects/`
+  One folder per project, grouped by Azure workload family.
+- `src/projects.py`
+  Aggregation layer that executes the implemented projects and packages a single report.
+- `main.py`
+  Entry point that runs the bundle and persists the runtime artifact.
+- `tests/test_portfolio.py`
+  Regression layer for structural checks and output integrity.
+
+### Implemented project semantics
+
+- `payment_anomaly_stream_azure`
+  Event-driven anomaly monitoring workload.
+- `enterprise_policy_search_azure`
+  Enterprise retrieval and search workload.
+- `claims_approval_workflow_azure`
+  Operational approval workflow workload.
 
 ### Additional blueprints
 
@@ -253,3 +346,41 @@ The reference design can be interpreted in layers:
   `Azure Machine Learning`, `Azure AI Search`, `Azure AI Bot Service`, and `Azure Custom Vision`
 - `exposure and consumption`
   `App Service`, `API Management`, and `Power BI`
+
+### Consolidated artifact contract
+
+The monorepo writes:
+
+- `data/processed/azure_portfolio_report.json`
+
+Each project entry contains, at minimum:
+
+- `project_name`
+- `azure_services`
+- workload-specific operational metrics
+
+Typical examples:
+
+- streaming:
+  - `events_processed`
+  - `anomaly_rate`
+  - `precision`
+  - `recall`
+- search:
+  - `documents_indexed`
+  - `top_match_doc_id`
+  - `top_match_score`
+- workflow:
+  - `claims_processed`
+  - `auto_approved`
+  - `manual_review_queue`
+  - `auto_approval_rate`
+
+### Technical positioning
+
+The goal of this repository is not to emulate managed Azure runtime behavior locally. Instead, it is designed to show:
+
+- architectural decomposition by workload family
+- mapping between business problems and Azure services
+- lightweight local implementations that validate the core logic
+- a scalable monorepo structure for portfolio growth
